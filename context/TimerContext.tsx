@@ -28,6 +28,9 @@ export type TimerProps = {
   setStartTime: Dispatch<SetStateAction<number>>;
   setTimeRemaining: Dispatch<SetStateAction<number>>;
   setCountdown: Dispatch<SetStateAction<number>>;
+  countOutTime: (seconds: string) => void;
+  countInTime: (seconds: string) => void;
+  countOut: number;
 };
 
 const TimerContext = createContext({} as TimerProps);
@@ -44,6 +47,8 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
   const [isLastSeconds, setIsLastSeconds] = useState(false);
   const [countDown, setCountdown] = useState(10);
   const [countHasValue, setCountHasValue] = useState(false);
+  const [countOut, setCountOut] = useState(10);
+  const [countIn, setCountIn] = useState(10);
 
   const beepSound = async () => {
     try {
@@ -85,7 +90,7 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
 
       if (remainingTime > 0) {
         setTimeRemaining(remainingTime);
-        if (remainingTime <= 10) {
+        if (remainingTime <= countOut) {
           beepSound();
           setIsLastSeconds(true);
         }
@@ -125,6 +130,14 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
     setIsLastSeconds(false);
   };
 
+  const countOutTime = (seconds: string) => {
+    setCountOut(parseInt(seconds));
+  };
+
+  const countInTime = (seconds: string) => {
+    setCountIn(parseInt(seconds));
+  };
+
   return (
     <TimerContext.Provider
       value={{
@@ -146,6 +159,9 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
         resetTimer,
         setStartTime,
         setCountdown,
+        countOutTime,
+        countInTime,
+        countOut,
       }}
     >
       {children}

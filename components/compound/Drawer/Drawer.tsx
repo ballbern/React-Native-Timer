@@ -1,11 +1,5 @@
 import React, { useRef, ReactElement } from "react";
-import {
-  StyleSheet,
-  DrawerLayoutAndroid,
-  Text,
-  View,
-  Pressable,
-} from "react-native";
+import { StyleSheet, DrawerLayoutAndroid, View, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTimer } from "../../../context/TimerContext";
 import { CountControl } from "../CountControl/CountControl";
@@ -15,13 +9,33 @@ type DrawerProps = {
 };
 
 export const Drawer = ({ children }: DrawerProps) => {
-  const { isRunning } = useTimer();
   const drawer = useRef<DrawerLayoutAndroid>(null);
+  const {
+    isRunning,
+    countOutTime,
+    countInTime,
+    countOut: defaultCountOut,
+  } = useTimer();
+
+  console.log(defaultCountOut);
+
+  const countOut = (id: string) => countOutTime(id);
+  const countIn = (id: string) => countInTime(id);
 
   const navigationView = () => (
     <View style={styles.navigationContainer}>
-      <CountControl title='Count out' />
-      <CountControl title='Count in' />
+      <CountControl
+        title='Count Out'
+        buttonLabels={["5sec", "10sec", "15sec"]}
+        onPress={countOut}
+        selected={`${defaultCountOut.toString()}sec`}
+      />
+      <CountControl
+        title='Count In'
+        buttonLabels={["5sec", "10sec", "15sec"]}
+        onPress={countIn}
+        selected={`${defaultCountOut.toString()}sec`}
+      />
     </View>
   );
 
