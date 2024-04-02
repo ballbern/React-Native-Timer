@@ -3,7 +3,7 @@ import { StyleSheet, Pressable, PressableProps } from "react-native";
 import { Font } from "../Font/Font";
 
 type ButtonProps = PressableProps & {
-  title: string;
+  title: string | React.ReactElement | boolean;
   fontSize?: number;
   buttonStyle?: any;
   textStyle?: any;
@@ -17,16 +17,13 @@ export const Button = ({
   buttonStyle,
   textStyle,
   isLastSeconds,
+  hitSlop,
 }: ButtonProps) => {
   const otherButtonStyles = { ...styles.button, ...buttonStyle };
   const otherButtonTextStyles = { ...styles.text, ...textStyle };
 
   return (
-    <Pressable
-      style={otherButtonStyles}
-      onPress={onPress}
-      pressRetentionOffset={{ bottom: 30, left: 20, right: 20, top: 20 }}
-    >
+    <Pressable style={otherButtonStyles} onPress={onPress} hitSlop={hitSlop}>
       <Font
         size={fontSize}
         color={`${!isLastSeconds ? "white" : "red"}`}

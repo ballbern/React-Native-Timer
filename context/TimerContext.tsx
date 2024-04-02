@@ -21,6 +21,7 @@ export type TimerProps = {
   minutes: string;
   seconds: string;
   isLastSeconds: boolean;
+  countHasValue: boolean;
   startTimer: () => void;
   stopTimer: () => void;
   resetTimer: () => void;
@@ -42,45 +43,51 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
   const [isRunning, setIsRunning] = useState(false);
   const [isLastSeconds, setIsLastSeconds] = useState(false);
   const [countDown, setCountdown] = useState(10);
+  const [countHasValue, setCountHasValue] = useState(false);
 
   const beepSound = async () => {
     try {
-      const { sound } = await Audio.Sound.createAsync(
-        require("../assets/sounds/beep-sound.mp3")
-      );
+      const sound = new Audio.Sound();
+      await sound.loadAsync(require("../assets/sounds/beep-sound.mp3"), {
+        shouldPlay: true,
+      });
+      await sound.setPositionAsync(0);
       await sound.playAsync();
-      await sound.unloadAsync();
     } catch (error) {
-      console.error("Error playing sound:", error);
+      console.error("Error playing beep sound:", error);
     }
   };
 
   const buzzerSound = async () => {
     try {
-      const { sound } = await Audio.Sound.createAsync(
-        require("../assets/sounds/beep-sound-2.wav")
-      );
+      const sound = new Audio.Sound();
+      await sound.loadAsync(require("../assets/sounds/beep-sound-2.wav"), {
+        shouldPlay: true,
+      });
+      await sound.setPositionAsync(0);
       await sound.playAsync();
-      await sound.unloadAsync();
     } catch (error) {
-      console.error("Error playing sound:", error);
+      console.error("Error playing buzzer sound:", error);
     }
   };
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
+    timeRemaining > 0 ? setCountHasValue(true) : setCountHasValue(false);
+
     const updateTimeRemaining = () => {
       const currentTime = Date.now();
       const elapsedTime = Math.floor((currentTime - startTime) / 1000);
-      const remainingTime = countDown - elapsedTime;
+      const remainingTime = timeRemaining - elapsedTime;
 
-      console.log(remainingTime);
+      if (remainingTime === 0) buzzerSound();
+
       if (remainingTime > 0) {
         setTimeRemaining(remainingTime);
         if (remainingTime <= 10) {
-          // setIsLastSeconds(true);
           beepSound();
+          setIsLastSeconds(true);
         }
       } else {
         setIsRunning(false);
@@ -100,37 +107,6 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
       }
     };
   }, [countDown, isRunning, startTime]);
-
-  // useEffect(() => {
-  //   let interval: NodeJS.Timeout;
-
-  //   if (isRunning) {
-  //     interval = setInterval(() => {
-  //       setTimeRemaining(prev => {
-  //         if (prev > 0) {
-  //           if (prev <= countDown + 1 && prev > 1) {
-  //             setIsLastSeconds(true);
-  //             beepSound();
-  //           }
-  //           if (prev === 1) {
-  //             buzzerSound();
-  //           }
-  //           return prev - 1;
-  //         } else {
-  //           setIsRunning(false);
-  //           setIsLastSeconds(false);
-  //           return prev;
-  //         }
-  //       });
-  //     }, 1000);
-  //   }
-
-  //   return () => {
-  //     if (interval) {
-  //       clearInterval(interval);
-  //     }
-  //   };
-  // }, [countDown, isRunning]);
 
   const startTimer = () => {
     if (timeRemaining === 0) {
@@ -163,6 +139,7 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
           .padStart(2, "0"),
         seconds: (timeRemaining % 60).toString().padStart(2, "0"),
         isLastSeconds,
+        countHasValue,
         setTimeRemaining,
         startTimer,
         stopTimer,

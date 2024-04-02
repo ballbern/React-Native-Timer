@@ -13,7 +13,6 @@ type TimeDropdown = PressableProps & {
   unit: string;
   value: string;
   fontSize?: number;
-  isLastSeconds?: boolean;
   textStyle?: any;
   autoStart?: boolean;
   dropdownPress?: (value: number, unit: string) => void;
@@ -23,14 +22,14 @@ export const TimeDropdown = ({
   unit,
   value,
   fontSize,
-  isLastSeconds,
   textStyle,
-  dropdownPress,
   autoStart,
+  hitSlop,
+  dropdownPress,
   ...props
 }: TimeDropdown) => {
+  const { isRunning, isLastSeconds } = useTimer();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
   const numberOfLinks = unit === "h" ? 12 : 60;
 
   const getSelection = (value: string) => {
@@ -38,7 +37,9 @@ export const TimeDropdown = ({
     dropdownPress?.(parseInt(value), unit);
   };
 
-  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
+  const toggleDropdown = () => !isRunning && setDropdownOpen(!dropdownOpen);
+
+  const buttonStyle = { paddingBottom: 35 };
 
   return (
     <>
@@ -49,7 +50,9 @@ export const TimeDropdown = ({
             fontSize={fontSize}
             title={`${value}${unit}`}
             textStyle={textStyle}
+            buttonStyle={buttonStyle}
             isLastSeconds={isLastSeconds}
+            hitSlop={hitSlop}
             {...props}
           />
         </View>

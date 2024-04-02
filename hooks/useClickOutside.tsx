@@ -1,15 +1,26 @@
-import { useEventListener } from "./useEventListener";
+import { useRef, useEffect, useState } from "react";
+import { PanResponder, View } from "react-native";
 
-export const useClickOutside = (
-  ref: React.RefObject<HTMLDivElement>,
-  cb: (e: MouseEvent) => void
-) => {
-  useEventListener(
-    "click",
-    e => {
-      if (ref.current == null || ref.current.contains(e.target as Node)) return;
-      cb(e);
-    },
-    document
-  );
+export const useClickOutside = (initialRefState = null) => {
+  const [isClickedOutside, setIsClickedOutside] = useState(false);
+  const ref = useRef(initialRefState);
+
+  useEffect(() => {
+    const panResponder = PanResponder.create({
+      onStartShouldSetPanResponder: (evt, gestureState) => true,
+      onPanResponderGrant: () => setIsClickedOutside(true),
+      onPanResponderTerminate: () => setIsClickedOutside(false),
+    });
+
+    const pressOutsideSubscription =
+      ref.current &&
+      ref.current.setNativeProps &&
+      ref.current.setNativeProps({
+        ...panResponder.panHandlers,
+      });
+
+    return () => pressOutsideSubscription && pressOutsideSubscription.remove();
+  }, [ref]);
+
+  return [ref, isClickedOutside];
 };

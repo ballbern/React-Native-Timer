@@ -8,7 +8,11 @@ export const Footer = () => {
 
   return (
     <View style={styles.footer}>
-      <Button title='3 minutes' onPress={() => setTimeRemaining(180)} />
+      <Button
+        title='3 minutes'
+        onPress={() => setTimeRemaining(180)}
+        hitSlop={{ top: 30, bottom: 30, left: 200, right: 30 }}
+      />
       <Button title='5 minutes' onPress={() => setTimeRemaining(300)} />
       <Button title='10 minutes' onPress={() => setTimeRemaining(600)} />
     </View>
