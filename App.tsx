@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, StatusBar } from "react-native";
 import * as ScreenOrientation from "expo-screen-orientation";
 import React, { useCallback, useEffect } from "react";
-import { Header, Main, Footer } from "./components";
+import { Main, Drawer } from "./components";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { View } from "react-native";
@@ -37,9 +37,12 @@ export default function App() {
   return (
     <TimerProvider>
       <View style={styles.app} onLayout={onLayoutRootView}>
-        {false ? <Header /> : null}
-        <Main />
-        {false ? <Footer /> : null}
+        <Drawer>
+          <>
+            <StatusBar hidden />
+            <Main />
+          </>
+        </Drawer>
       </View>
     </TimerProvider>
   );

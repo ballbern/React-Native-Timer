@@ -3,7 +3,7 @@ import { View, StyleSheet, Dimensions } from "react-native";
 import { Button } from "../../";
 import { useRef } from "react";
 import { useTimer } from "../../../context/TimerContext";
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import { FontAwesome } from "@expo/vector-icons";
 
 export const Main = () => {
   const {
@@ -64,21 +64,8 @@ export const Main = () => {
     timeValuesRef.current = { h: 0, m: 0, s: 0 };
   };
 
-  const settingsPress = () => console.log("settingsPress");
-
   return (
     <>
-      {!isRunning ? (
-        <View style={{ position: "absolute", right: 40, top: 55 }}>
-          <Ionicons
-            onPress={settingsPress}
-            name='settings-sharp'
-            size={20}
-            color='white'
-          />
-        </View>
-      ) : null}
-
       {timeRemaining > 0 && (
         <View style={styles.startStopButtons}>
           <Button
@@ -172,7 +159,7 @@ const styles = StyleSheet.create({
   startStopButtons: {
     flexDirection: "row",
     position: "absolute",
-    top: "12%",
+    top: "10%",
     left: "40%",
     zIndex: 1,
   },
