@@ -90,13 +90,13 @@ export const Main = () => {
       )}
 
       <View style={styles.main}>
-        <TimeDropdown
+        {/* <TimeDropdown
           dropdownPress={getTimeValue}
           fontSize={parseInt(`${!isRunning ? 110 : 160}`)}
           hitSlop={{ top: 5, bottom: 5, left: 30, right: 50 }}
           value={hours}
           unit='h'
-        />
+        /> */}
         <TimeDropdown
           dropdownPress={getTimeValue}
           fontSize={parseInt(`${!isRunning ? 110 : 160}`)}

@@ -1,37 +1,6 @@
-import {
-  useContext,
-  createContext,
-  useState,
-  useEffect,
-  ReactNode,
-  Dispatch,
-  SetStateAction,
-} from "react";
-import { Audio } from "expo-av";
-
-export type TimerProviderProps = {
-  children: ReactNode;
-};
-
-export type TimerProps = {
-  timeRemaining: number;
-  isRunning: boolean;
-  startTime: number;
-  hours: string;
-  minutes: string;
-  seconds: string;
-  isLastSeconds: boolean;
-  countHasValue: boolean;
-  startTimer: () => void;
-  stopTimer: () => void;
-  resetTimer: () => void;
-  setStartTime: Dispatch<SetStateAction<number>>;
-  setTimeRemaining: Dispatch<SetStateAction<number>>;
-  setCountdown: Dispatch<SetStateAction<number>>;
-  countOutTime: (seconds: string) => void;
-  countInTime: (seconds: string) => void;
-  countOut: number;
-};
+import { useContext, createContext, useState, useEffect } from "react";
+import { TimerProviderProps, TimerProps } from "../types/TimerContext";
+import { useSounds } from "../hooks/useSounds";
 
 const TimerContext = createContext({} as TimerProps);
 
@@ -45,56 +14,36 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
   const [timeRemaining, setTimeRemaining] = useState(startTime);
   const [isRunning, setIsRunning] = useState(false);
   const [isLastSeconds, setIsLastSeconds] = useState(false);
-  const [countDown, setCountdown] = useState(10);
-  const [countHasValue, setCountHasValue] = useState(false);
-  const [countOut, setCountOut] = useState(10);
+  const [countOut, setCountOut] = useState(5);
   const [countIn, setCountIn] = useState(10);
 
-  const beepSound = async () => {
-    try {
-      const sound = new Audio.Sound();
-      await sound.loadAsync(require("../assets/sounds/beep-sound.mp3"), {
-        shouldPlay: true,
-      });
-      await sound.setPositionAsync(0);
-      await sound.playAsync();
-    } catch (error) {
-      console.error("Error playing beep sound:", error);
-    }
-  };
-
-  const buzzerSound = async () => {
-    try {
-      const sound = new Audio.Sound();
-      await sound.loadAsync(require("../assets/sounds/beep-sound-2.wav"), {
-        shouldPlay: true,
-      });
-      await sound.setPositionAsync(0);
-      await sound.playAsync();
-    } catch (error) {
-      console.error("Error playing buzzer sound:", error);
-    }
-  };
+  const { beepSound, buzzerSound } = useSounds();
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
-    timeRemaining > 0 ? setCountHasValue(true) : setCountHasValue(false);
-
     const updateTimeRemaining = () => {
+      // Get the current time in milliseconds.
       const currentTime = Date.now();
+      // Calculate the elapsed time in seconds by subtracting the start time from the current time and converting it to seconds.
       const elapsedTime = Math.floor((currentTime - startTime) / 1000);
+      // Calculate the remaining time by subtracting the elapsed time from the total time.
       const remainingTime = timeRemaining - elapsedTime;
 
+      // If the remaining time is 0, trigger the buzzer sound.
       if (remainingTime === 0) buzzerSound();
 
+      // If there is remaining time.
       if (remainingTime > 0) {
+        // Update the state with the remaining time.
         setTimeRemaining(remainingTime);
+        // If the remaining time is less than or equal to countOut, trigger the beep sound and set isLastSeconds to true.
         if (remainingTime <= countOut) {
           beepSound();
           setIsLastSeconds(true);
         }
       } else {
+        // If there is no remaining time, set isRunning and isLastSeconds to false, and reset the remaining time to 0.
         setIsRunning(false);
         setIsLastSeconds(false);
         setTimeRemaining(0);
@@ -111,7 +60,7 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
         clearInterval(interval);
       }
     };
-  }, [countDown, isRunning, startTime]);
+  }, [isRunning, startTime]);
 
   const startTimer = () => {
     if (timeRemaining === 0) {
@@ -152,13 +101,11 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
           .padStart(2, "0"),
         seconds: (timeRemaining % 60).toString().padStart(2, "0"),
         isLastSeconds,
-        countHasValue,
         setTimeRemaining,
         startTimer,
         stopTimer,
         resetTimer,
         setStartTime,
-        setCountdown,
         countOutTime,
         countInTime,
         countOut,

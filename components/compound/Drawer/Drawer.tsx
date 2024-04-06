@@ -1,8 +1,14 @@
 import React, { useRef, ReactElement } from "react";
-import { StyleSheet, DrawerLayoutAndroid, View, Pressable } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  StyleSheet,
+  DrawerLayoutAndroid,
+  View,
+  Pressable,
+  ScrollView,
+} from "react-native";
 import { useTimer } from "../../../context/TimerContext";
-import { CountControl } from "../CountControl/CountControl";
+import { CountControl, AddSubButtons } from "../../";
+import { Ionicons } from "@expo/vector-icons";
 
 type DrawerProps = {
   children: ReactElement;
@@ -17,26 +23,28 @@ export const Drawer = ({ children }: DrawerProps) => {
     countOut: defaultCountOut,
   } = useTimer();
 
-  console.log(defaultCountOut);
-
   const countOut = (id: string) => countOutTime(id);
   const countIn = (id: string) => countInTime(id);
 
   const navigationView = () => (
-    <View style={styles.navigationContainer}>
-      <CountControl
-        title='Count Out'
-        buttonLabels={["5sec", "10sec", "15sec"]}
-        onPress={countOut}
-        selected={`${defaultCountOut.toString()}sec`}
-      />
-      <CountControl
-        title='Count In'
-        buttonLabels={["5sec", "10sec", "15sec"]}
-        onPress={countIn}
-        selected={`${defaultCountOut.toString()}sec`}
-      />
-    </View>
+    <ScrollView>
+      <View style={styles.navigationContainer}>
+        <AddSubButtons title={"Rounds"} />
+        <AddSubButtons title={"Interval"} numberLabel={true} />
+        <CountControl
+          title='Count Out'
+          buttonLabels={["5sec", "10sec", "15sec"]}
+          onPress={countOut}
+          selected={`${defaultCountOut.toString()}sec`}
+        />
+        <CountControl
+          title='Count In'
+          buttonLabels={["5sec", "10sec", "15sec"]}
+          onPress={countIn}
+          selected={`${defaultCountOut.toString()}sec`}
+        />
+      </View>
+    </ScrollView>
   );
 
   const openDrawer = () => drawer.current?.openDrawer();
@@ -66,6 +74,7 @@ export const Drawer = ({ children }: DrawerProps) => {
 const styles = StyleSheet.create({
   navigationContainer: {
     flex: 1,
+    gap: 30,
     padding: 20,
     color: "white",
     backgroundColor: "#3b3a3a",

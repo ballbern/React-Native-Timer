@@ -33,6 +33,7 @@ export const CountControl = ({
                 styles.selectedButton,
             ]}
             onPress={() => click(label)}
+            key={label}
           >
             <Text
               style={[
@@ -51,7 +52,7 @@ export const CountControl = ({
 };
 
 const styles = StyleSheet.create({
-  container: { marginTop: 40 },
+  container: { marginTop: 0 },
   text: { color: "white", fontSize: 15, fontWeight: "800" },
   selectedText: { color: "#3b3a3a" },
   textTitle: { marginBottom: 10, color: "white", fontWeight: "bold" },
