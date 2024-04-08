@@ -18,30 +18,74 @@ export const Drawer = ({ children }: DrawerProps) => {
   const drawer = useRef<DrawerLayoutAndroid>(null);
   const {
     isRunning,
+    timeRemaining,
     countOutTime,
     countInTime,
-    countOut: defaultCountOut,
+    setTimeRemaining,
   } = useTimer();
 
-  const countOut = (id: string) => countOutTime(id);
-  const countIn = (id: string) => countInTime(id);
+  const countOut = (id: string) => {
+    const match = id.match(/^\d+/);
+    if (match) {
+      countOutTime({ id: parseInt(match[0], 10) });
+    }
+  };
+
+  const countIn = (id: string) => {
+    const match = id.match(/^\d+/);
+    if (match) {
+      countInTime({ id: parseInt(match[0], 10) });
+    }
+  };
+
+  const rounds = (inter: string) => {
+    setTimeRemaining(prev => ({
+      ...prev,
+      rounds:
+        inter === "+"
+          ? Math.max(prev.rounds + 1, 1)
+          : Math.max(prev.rounds - 1, 1),
+    }));
+  };
+
+  const intervals = (inter: string) => {
+    setTimeRemaining(prev => ({
+      ...prev,
+      interval:
+        inter === "+"
+          ? Math.min(Math.max(prev.intervals + 1, 0), 10)
+          : Math.min(Math.max(prev.intervals - 1, 0), 10),
+    }));
+  };
 
   const navigationView = () => (
     <ScrollView>
       <View style={styles.navigationContainer}>
-        <AddSubButtons title={"Rounds"} />
-        <AddSubButtons title={"Interval"} numberLabel={true} />
-        <CountControl
-          title='Count Out'
-          buttonLabels={["5sec", "10sec", "15sec"]}
-          onPress={countOut}
-          selected={`${defaultCountOut.toString()}sec`}
+        {/* round and intervals */}
+        <AddSubButtons
+          title={"Rounds"}
+          onPress={rounds}
+          value={timeRemaining.rounds}
         />
+        <AddSubButtons
+          title={"Interval"}
+          onPress={intervals}
+          value={timeRemaining.intervals}
+          numberLabel={true}
+        />
+
+        {/* count in out */}
         <CountControl
           title='Count In'
           buttonLabels={["5sec", "10sec", "15sec"]}
           onPress={countIn}
-          selected={`${defaultCountOut.toString()}sec`}
+          selected={`${timeRemaining.countIn.toString()}sec`}
+        />
+        <CountControl
+          title='Count Out'
+          buttonLabels={["5sec", "10sec", "15sec"]}
+          onPress={countOut}
+          selected={`${timeRemaining.countOut.toString()}sec`}
         />
       </View>
     </ScrollView>

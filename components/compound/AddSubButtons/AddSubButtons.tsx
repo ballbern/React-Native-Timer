@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Pressable, View, Text, StyleSheet } from "react-native";
 import { FontAwesome6, Entypo } from "@expo/vector-icons";
 import { Font } from "../../primitive/Font/Font";
@@ -6,14 +6,17 @@ import { Font } from "../../primitive/Font/Font";
 type AddSubButtonsProps = {
   title: string;
   numberLabel?: boolean;
+  value?: number;
+  onPress: (inter: string) => void;
 };
 
-export const AddSubButtons = ({ title, numberLabel }: AddSubButtonsProps) => {
-  const [value, setValue] = useState(1);
-
-  const updateValue = (inter: string): void => {
-    setValue(value => (inter === "+" ? value + 1 : value - 1));
-  };
+export const AddSubButtons = ({
+  title,
+  numberLabel,
+  value: countValue,
+  onPress,
+}: AddSubButtonsProps) => {
+  const updateValue = (inter: string) => onPress(inter);
 
   return (
     <View>
@@ -26,7 +29,7 @@ export const AddSubButtons = ({ title, numberLabel }: AddSubButtonsProps) => {
           <FontAwesome6 name='add' size={24} color='white' />
         </Pressable>
         <Text style={styles.addSubNumber}>
-          {value}
+          {countValue}
           {numberLabel && <Font style={{ fontSize: 12 }}>mins</Font>}
         </Text>
       </View>

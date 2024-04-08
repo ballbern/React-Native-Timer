@@ -1,54 +1,60 @@
+import moment from "moment";
 import { useContext, createContext, useState, useEffect } from "react";
 import { TimerProviderProps, TimerProps } from "../types/TimerContext";
 import { useSounds } from "../hooks/useSounds";
 
 const TimerContext = createContext({} as TimerProps);
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useTimer = () => {
   return useContext(TimerContext);
 };
 
 export const TimerProvider = ({ children }: TimerProviderProps) => {
-  const [startTime, setStartTime] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState(startTime);
+  const [startTime, setStartTime] = useState(moment(0));
   const [isRunning, setIsRunning] = useState(false);
   const [isLastSeconds, setIsLastSeconds] = useState(false);
-  const [countOut, setCountOut] = useState(5);
-  const [countIn, setCountIn] = useState(10);
+  const [hasCountInTime, setHasCountInTime] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState({
+    rounds: 1,
+    intervals: 0,
+    time: 0,
+    countIn: 5,
+    countOut: 5,
+  });
 
   const { beepSound, buzzerSound } = useSounds();
 
+  const updateTimeRemaining = () => {
+    const currentTime = moment();
+    const elapsedTime = currentTime.diff(startTime, "seconds");
+    const remainingTime = timeRemaining.time - elapsedTime;
+
+    if (remainingTime === 0) buzzerSound();
+
+    if (remainingTime > 0) {
+      setTimeRemaining(prev => ({
+        ...prev,
+        time: remainingTime,
+      }));
+
+      if (remainingTime <= timeRemaining.countOut) {
+        beepSound();
+        setIsLastSeconds(true);
+      }
+    } else {
+      setIsRunning(false);
+      setIsLastSeconds(false);
+      setTimeRemaining(prev => ({
+        ...prev,
+        time: 0,
+        countIn: prev.countIn,
+        countOut: prev.countOut,
+      }));
+    }
+  };
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
-
-    const updateTimeRemaining = () => {
-      // Get the current time in milliseconds.
-      const currentTime = Date.now();
-      // Calculate the elapsed time in seconds by subtracting the start time from the current time and converting it to seconds.
-      const elapsedTime = Math.floor((currentTime - startTime) / 1000);
-      // Calculate the remaining time by subtracting the elapsed time from the total time.
-      const remainingTime = timeRemaining - elapsedTime;
-
-      // If the remaining time is 0, trigger the buzzer sound.
-      if (remainingTime === 0) buzzerSound();
-
-      // If there is remaining time.
-      if (remainingTime > 0) {
-        // Update the state with the remaining time.
-        setTimeRemaining(remainingTime);
-        // If the remaining time is less than or equal to countOut, trigger the beep sound and set isLastSeconds to true.
-        if (remainingTime <= countOut) {
-          beepSound();
-          setIsLastSeconds(true);
-        }
-      } else {
-        // If there is no remaining time, set isRunning and isLastSeconds to false, and reset the remaining time to 0.
-        setIsRunning(false);
-        setIsLastSeconds(false);
-        setTimeRemaining(0);
-      }
-    };
 
     if (isRunning) {
       interval = setInterval(updateTimeRemaining, 1000);
@@ -63,29 +69,79 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
   }, [isRunning, startTime]);
 
   const startTimer = () => {
-    if (timeRemaining === 0) {
-      setTimeRemaining(startTime);
+    if (timeRemaining.countIn > 0) {
+      updateCountInTime();
+    } else {
+      setStartTime(moment());
+      setIsRunning(true);
     }
-    setStartTime(Date.now());
+    // start interval if set
+  };
+
+  const updateCountInTime = () => {
+    setHasCountInTime(true);
+    setStartTime(moment().add(timeRemaining.countIn, "seconds"));
     setIsRunning(true);
+
+    // Initialize remaining time to countIn
+    let remainingTime = timeRemaining.countIn;
+    let originalCountIn = timeRemaining.countIn;
+
+    // Decrement remaining time every second until it reaches 0
+    const countInInterval = setInterval(() => {
+      remainingTime--;
+      setTimeRemaining(prev => ({
+        ...prev,
+        countIn: remainingTime,
+      }));
+
+      if (remainingTime <= 0) {
+        clearInterval(countInInterval);
+        setIsRunning(false);
+        setHasCountInTime(false);
+        setTimeRemaining(prev => ({
+          ...prev,
+          countIn: originalCountIn,
+        }));
+        setStartTime(moment());
+        setIsRunning(true);
+      }
+    }, 1000);
   };
 
   const stopTimer = () => setIsRunning(false);
 
   const resetTimer = () => {
     setIsRunning(false);
-    setTimeRemaining(0);
-    setStartTime(0);
+    setTimeRemaining(prev => ({
+      ...prev,
+      time: 0,
+    }));
+    setStartTime(moment(0));
     setIsLastSeconds(false);
   };
 
-  const countOutTime = (seconds: string) => {
-    setCountOut(parseInt(seconds));
+  const countOutTime = (seconds: { id: number }) => {
+    setTimeRemaining(prev => ({ ...prev, countOut: seconds.id }));
   };
 
-  const countInTime = (seconds: string) => {
-    setCountIn(parseInt(seconds));
+  const countInTime = (seconds: { id: number }) => {
+    setTimeRemaining(prev => ({ ...prev, countIn: seconds.id }));
   };
+
+  const hours = Math.floor(timeRemaining.time / 3600)
+    .toString()
+    .padStart(2, "0");
+
+  const minutes = Math.floor((timeRemaining.time % 3600) / 60)
+    .toString()
+    .padStart(2, "0");
+
+  const seconds = (timeRemaining.time % 60).toString().padStart(2, "0");
+
+  const countInSeconds = (timeRemaining.countIn % 60)
+    .toString()
+    .padStart(2, "0");
 
   return (
     <TimerContext.Provider
@@ -93,14 +149,12 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
         timeRemaining,
         isRunning,
         startTime,
-        hours: Math.floor(timeRemaining / 3600)
-          .toString()
-          .padStart(2, "0"),
-        minutes: Math.floor((timeRemaining % 3600) / 60)
-          .toString()
-          .padStart(2, "0"),
-        seconds: (timeRemaining % 60).toString().padStart(2, "0"),
+        hours,
+        minutes,
+        seconds,
         isLastSeconds,
+        hasCountInTime,
+        countInSeconds,
         setTimeRemaining,
         startTimer,
         stopTimer,
@@ -108,7 +162,6 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
         setStartTime,
         countOutTime,
         countInTime,
-        countOut,
       }}
     >
       {children}

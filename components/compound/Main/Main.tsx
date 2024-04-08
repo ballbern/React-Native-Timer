@@ -15,7 +15,9 @@ export const Main = () => {
     hours,
     minutes,
     seconds,
+    countInSeconds,
     timeRemaining,
+    hasCountInTime,
   } = useTimer();
 
   const { width, height } = Dimensions.get("window");
@@ -30,7 +32,10 @@ export const Main = () => {
   const timeValuesRef = useRef({ h: 0, m: 0, s: 0 });
 
   const setTimeValue = (totalTimeValue: number) => {
-    setTimeRemaining(totalTimeValue);
+    setTimeRemaining(prev => ({
+      ...prev,
+      time: totalTimeValue,
+    }));
   };
 
   const getTimeValue = (value: number, unit: string) => {
@@ -66,7 +71,7 @@ export const Main = () => {
 
   return (
     <>
-      {timeRemaining > 0 && (
+      {timeRemaining.time > 0 && (
         <View style={styles.startStopButtons}>
           <Button
             title={
@@ -90,27 +95,32 @@ export const Main = () => {
       )}
 
       <View style={styles.main}>
-        {/* <TimeDropdown
-          dropdownPress={getTimeValue}
-          fontSize={parseInt(`${!isRunning ? 110 : 160}`)}
-          hitSlop={{ top: 5, bottom: 5, left: 30, right: 50 }}
-          value={hours}
-          unit='h'
-        /> */}
-        <TimeDropdown
-          dropdownPress={getTimeValue}
-          fontSize={parseInt(`${!isRunning ? 110 : 160}`)}
-          hitSlop={{ top: 5, bottom: 5, left: 50, right: 50 }}
-          value={minutes}
-          unit='m'
-        />
-        <TimeDropdown
-          dropdownPress={getTimeValue}
-          fontSize={parseInt(`${!isRunning ? 110 : 160}`)}
-          hitSlop={{ top: 5, bottom: 5, left: 30, right: 50 }}
-          value={seconds}
-          unit='s'
-        />
+        {hasCountInTime ? (
+          <TimeDropdown
+            dropdownPress={getTimeValue}
+            fontSize={parseInt(`${!isRunning ? 110 : 160}`)}
+            hitSlop={{ top: 5, bottom: 5, left: 30, right: 50 }}
+            value={countInSeconds}
+            unit='s'
+          />
+        ) : (
+          <>
+            <TimeDropdown
+              dropdownPress={getTimeValue}
+              fontSize={parseInt(`${!isRunning ? 110 : 160}`)}
+              hitSlop={{ top: 5, bottom: 5, left: 50, right: 50 }}
+              value={minutes}
+              unit='m'
+            />
+            <TimeDropdown
+              dropdownPress={getTimeValue}
+              fontSize={parseInt(`${!isRunning ? 110 : 160}`)}
+              hitSlop={{ top: 5, bottom: 5, left: 30, right: 50 }}
+              value={seconds}
+              unit='s'
+            />
+          </>
+        )}
       </View>
 
       {!isRunning ? (
@@ -119,21 +129,36 @@ export const Main = () => {
             fontSize={20}
             buttonStyle={styles.footerButton}
             title='3 minutes'
-            onPress={() => setTimeRemaining(180)}
+            onPress={() =>
+              setTimeRemaining(prev => ({
+                ...prev,
+                time: 180,
+              }))
+            }
             hitSlop={{ top: 30, bottom: 30, left: 100, right: 100 }}
           />
           <Button
             fontSize={20}
             buttonStyle={styles.footerButton}
             title='5 minutes'
-            onPress={() => setTimeRemaining(300)}
+            onPress={() =>
+              setTimeRemaining(prev => ({
+                ...prev,
+                time: 300,
+              }))
+            }
             hitSlop={{ top: 30, bottom: 30, left: 100, right: 100 }}
           />
           <Button
             fontSize={20}
             buttonStyle={styles.footerButton}
             title='10 minutes'
-            onPress={() => setTimeRemaining(600)}
+            onPress={() =>
+              setTimeRemaining(prev => ({
+                ...prev,
+                time: 600,
+              }))
+            }
             hitSlop={{ top: 30, bottom: 30, left: 100, right: 100 }}
           />
         </View>
